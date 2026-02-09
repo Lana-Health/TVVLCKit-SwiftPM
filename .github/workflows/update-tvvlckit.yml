@@ -206,6 +206,7 @@ jobs:
           git config --global core.compression 0
 
       - name: Create Pull Request
+        id: create-pr
         if: steps.check-version.outputs.update_available == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
@@ -248,14 +249,14 @@ jobs:
             tvos
 
       - name: Fallback - Commit to main if PR failed
-        if: steps.check-version.outputs.update_available == 'true' && failure()
+        if: steps.check-version.outputs.update_available == 'true' && steps.create-pr.outcome == 'failure'
         run: |
           echo "⚠️ PR creation failed, committing Package.swift directly to main branch..."
           
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Stash any large files
+          # Add only essential files to avoid large file issues
           git add Package.swift LICENSE README.md 2>/dev/null || true
           
           # Check if there are changes to commit
