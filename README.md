@@ -1,4 +1,4 @@
-# TVVLCKit-SPM
+# TVVLCKit-SwiftPM
 
 SPM wrapper for TVVLCKit binary distribution.
 
