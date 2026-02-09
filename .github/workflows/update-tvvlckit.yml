@@ -19,6 +19,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
       - name: Check for latest VLCKit release
         id: check-version
@@ -187,6 +189,14 @@ jobs:
           echo "--- README.md changes ---"
           git diff README.md || echo "No changes detected in README.md"
           echo "--- End of README.md changes ---"
+
+      - name: Configure Git for large pushes
+        if: steps.check-version.outputs.update_available == 'true'
+        run: |
+          git config --global http.postBuffer 524288000
+          git config --global http.lowSpeedLimit 0
+          git config --global http.lowSpeedTime 999999
+          git config --global core.compression 0
 
       - name: Create Pull Request
         if: steps.check-version.outputs.update_available == 'true'
