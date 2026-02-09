@@ -247,6 +247,28 @@ jobs:
             automated
             tvos
 
+      - name: Fallback - Commit to main if PR failed
+        if: steps.check-version.outputs.update_available == 'true' && failure()
+        run: |
+          echo "⚠️ PR creation failed, committing Package.swift directly to main branch..."
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Stash any large files
+          git add Package.swift LICENSE README.md 2>/dev/null || true
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "Update Package.swift to v${{ steps.check-version.outputs.latest_version }} [skip ci]"
+          git push origin HEAD:main
+          
+          echo "✅ Package.swift committed directly to main"
+
       - name: Send notification on update
         if: steps.check-version.outputs.update_available == 'true'
         uses: actions/github-script@v7
