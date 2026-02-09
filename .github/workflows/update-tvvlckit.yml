@@ -144,13 +144,42 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download and verify release asset checksum
+        if: steps.check-version.outputs.update_available == 'true'
+        id: verify-checksum
+        run: |
+          VERSION="${{ steps.check-version.outputs.latest_version }}"
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/v${VERSION}/TVVLCKit.xcframework.zip"
+          
+          echo "Downloading release asset to verify checksum..."
+          curl -L -o .tmp/downloaded.zip "$RELEASE_URL"
+          
+          # Calculate the ACTUAL checksum of the uploaded file
+          ACTUAL_CHECKSUM=$(shasum -a 256 .tmp/downloaded.zip | awk '{ print $1 }')
+          echo "Actual checksum from release: $ACTUAL_CHECKSUM"
+          
+          WORKFLOW_CHECKSUM="${{ steps.package.outputs.checksum }}"
+          echo "Checksum calculated during packaging: $WORKFLOW_CHECKSUM"
+          
+          if [ "$ACTUAL_CHECKSUM" != "$WORKFLOW_CHECKSUM" ]; then
+            echo "⚠️ WARNING: Checksums don't match! Using actual checksum from release."
+            echo "actual_checksum=$ACTUAL_CHECKSUM" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Checksums match!"
+            echo "actual_checksum=$ACTUAL_CHECKSUM" >> $GITHUB_OUTPUT
+          fi
+          
+          rm -f .tmp/downloaded.zip
+
       - name: Update Package.swift
         if: steps.check-version.outputs.update_available == 'true'
         run: |
           VERSION="${{ steps.check-version.outputs.latest_version }}"
-          CHECKSUM="${{ steps.package.outputs.checksum }}"
+          CHECKSUM="${{ steps.verify-checksum.outputs.actual_checksum }}"
           
           echo "Updating Package.swift..."
+          echo "Version: $VERSION"
+          echo "Checksum: $CHECKSUM"
           
           # Update the URL and checksum in Package.swift
           sed -i '' "s|download/v[0-9.]*|download/v$VERSION|g" Package.swift
@@ -193,8 +222,9 @@ jobs:
       - name: Cleanup temporary files
         if: steps.check-version.outputs.update_available == 'true'
         run: |
-          echo "Cleaning up temporary files..."
+          echo "Cleaning up temporary files before creating PR..."
           rm -rf .tmp/
+          git status
           echo "✅ Temporary files removed"
 
       - name: Configure Git for large pushes

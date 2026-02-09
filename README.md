@@ -41,43 +41,6 @@ If you need to manually update the framework:
 3. Create a GitHub release with the generated `TVVLCKit.xcframework.zip`
 4. Commit the updated `Package.swift` and `LICENSE`
 
-```bash
-#!/bin/sh
-set -e
-
-rm -rf .tmp/ || true
-mkdir -p .tmp/
-
-TAG_VERSION="3.7.2"
-TVOS_URL="https://download.videolan.org/cocoapods/prod/TVVLCKit-3.7.2-c73b779f-dd8bfdba.tar.xz"
-
-echo "Downloading TVVLCKit..."
-curl -L -o .tmp/TVVLCKit.tar.xz $TVOS_URL
-tar -xf .tmp/TVVLCKit.tar.xz -C .tmp/
-
-TVOS_LOCATION=".tmp/TVVLCKit-binary/TVVLCKit.xcframework"
-
-echo "Creating TVVLCKit.xcframework..."
-xcodebuild -create-xcframework \
-    -framework "$TVOS_LOCATION/tvos-arm64_x86_64-simulator/TVVLCKit.framework" \
-    -debug-symbols "${PWD}/$TVOS_LOCATION/tvos-arm64_x86_64-simulator/dSYMs/TVVLCKit.framework.dSYM" \
-    -framework "$TVOS_LOCATION/tvos-arm64/TVVLCKit.framework" \
-    -debug-symbols "${PWD}/$TVOS_LOCATION/tvos-arm64/dSYMs/TVVLCKit.framework.dSYM" \
-    -output .tmp/TVVLCKit.xcframework
-
-ditto -c -k --sequesterRsrc --keepParent ".tmp/TVVLCKit.xcframework" ".tmp/TVVLCKit.xcframework.zip"
-
-PACKAGE_HASH=$(shasum -a 256 ".tmp/TVVLCKit.xcframework.zip" | awk '{ print $1 }')
-
-echo "Checksum: $PACKAGE_HASH"
-sed -i '' "s|download/v[0-9.]*|download/v$TAG_VERSION|g" Package.swift
-sed -i '' "s|checksum: \"[^\"]*\"|checksum: \"$PACKAGE_HASH\"|g" Package.swift
-
-cp -f .tmp/TVVLCKit-binary/COPYING.txt ./LICENSE
-
-echo "Done! Upload .tmp/TVVLCKit.xcframework.zip to GitHub Release v$TAG_VERSION"
-```
-
 ## Current Version
 
 - **TVVLCKit:** v3.7.2
