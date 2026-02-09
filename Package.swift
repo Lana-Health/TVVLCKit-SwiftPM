@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "TVVLCKit-SPM",
+    name: "TVVLCKit-SwiftPM",
     platforms: [
         .tvOS(.v13) // Set this to your minimum requirement
     ],
