@@ -190,6 +190,13 @@ jobs:
           git diff README.md || echo "No changes detected in README.md"
           echo "--- End of README.md changes ---"
 
+      - name: Cleanup temporary files
+        if: steps.check-version.outputs.update_available == 'true'
+        run: |
+          echo "Cleaning up temporary files..."
+          rm -rf .tmp/
+          echo "✅ Temporary files removed"
+
       - name: Configure Git for large pushes
         if: steps.check-version.outputs.update_available == 'true'
         run: |
