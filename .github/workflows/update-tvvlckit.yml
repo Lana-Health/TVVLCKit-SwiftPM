@@ -264,7 +264,7 @@ jobs:
             
             ```swift
             dependencies: [
-                .package(url: "https://github.com/Lana-Health/TVVLCKit-SPM.git", from: "${{ steps.check-version.outputs.latest_version }}")
+                .package(url: "https://github.com/Lana-Health/TVVLCKit-SwiftPM.git", from: "${{ steps.check-version.outputs.latest_version }}")
             ]
             ```
             
@@ -327,3 +327,4 @@ jobs:
               labels: ['notification', 'error'],
               assignees: ['apoorva-lana']
             });
+
