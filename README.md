@@ -43,7 +43,7 @@ If you need to manually update the framework:
 
 ## Current Version
 
-- **TVVLCKit:** v3.7.2
+- **TVVLCKit:** v3.7.3
 - **Source:** [VLCKit](https://github.com/videolan/vlckit)
 - **Platform:** tvOS 13.0+
 
